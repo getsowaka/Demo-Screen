@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Step Challenge — Demo Screens</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 30px 20px; }
+
+  .wrapper { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+  /* Screen selector */
+  .screen-nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; }
+  .screen-nav button {
+    background: #1E293B; color: #94A3B8; border: 1px solid #334155; border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; cursor: pointer; transition: all 0.2s;
+  }
+  .screen-nav button.active { background: #22C55E; color: #0F172A; border-color: #22C55E; font-weight: 600; }
+  .screen-nav button:hover { border-color: #22C55E; }
+
+  /* Phone frame */
+  .phone {
+    width: 375px; height: 812px; background: #0F172A; border-radius: 40px;
+    border: 3px solid #334155; overflow: hidden; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 50px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px; font-size: 12px; color: #F8FAFC; font-weight: 600;
+  }
+  .status-icons { display: flex; gap: 5px; font-size: 11px; }
+
+  /* Screen content area */
+  .screen-content {
+    height: calc(100% - 50px - 70px); overflow-y: auto; padding: 0 20px 20px;
+    scrollbar-width: none;
+  }
+  .screen-content::-webkit-scrollbar { display: none; }
+
+  /* Bottom tab bar */
+  .tab-bar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+    background: #1E293B; border-top: 1px solid #334155;
+    display: flex; align-items: center; justify-content: space-around;
+    padding-bottom: 8px;
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; transition: all 0.2s; padding: 8px 20px;
+  }
+  .tab-icon { font-size: 22px; }
+  .tab-label { font-size: 10px; color: #94A3B8; font-weight: 500; }
+  .tab.active .tab-label { color: #22C55E; }
+
+  /* Screen visibility */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ===== MY STEPS SCREEN ===== */
+  .greeting { color: #94A3B8; font-size: 14px; margin-bottom: 2px; }
+  .user-name { color: #F8FAFC; font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+
+  .progress-ring-container {
+    display: flex; justify-content: center; margin-bottom: 24px;
+  }
+  .progress-ring-wrap { position: relative; width: 220px; height: 220px; }
+  .progress-ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: #1E293B; stroke-width: 12; }
+  .ring-fill { fill: none; stroke: #22C55E; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+  .ring-center {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  .ring-steps { font-size: 40px; font-weight: 800; color: #F8FAFC; line-height: 1; }
+  .ring-label { font-size: 13px; color: #94A3B8; margin-top: 4px; }
+  .ring-target { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+  .streak-badge {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, #422006, #7c2d12); border: 1px solid #9a3412;
+    border-radius: 12px; padding: 10px 20px; margin-bottom: 20px;
+  }
+  .streak-fire { font-size: 20px; }
+  .streak-text { color: #FB923C; font-size: 15px; font-weight: 700; }
+  .streak-sub { color: #FDBA74; font-size: 11px; }
+
+  .stats-row {
+    display: flex; gap: 12px; margin-bottom: 20px;
+  }
+  .stat-card {
+    flex: 1; background: #1E293B; border-radius: 12px; padding: 14px 12px;
+    text-align: center;
+  }
+  .stat-icon { font-size: 18px; margin-bottom: 6px; }
+  .stat-value { font-size: 18px; font-weight: 700; color: #F8FAFC; }
+  .stat-label { font-size: 10px; color: #94A3B8; margin-top: 2px; }
+
+  .team-card {
+    background: #1E293B; border-radius: 14px; padding: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; border: 1px solid #334155; transition: border-color 0.2s;
+  }
+  .team-card:hover { border-color: #22C55E; }
+  .team-card-left { display: flex; flex-direction: column; gap: 4px; }
+  .team-card-name { font-size: 13px; color: #94A3B8; }
+  .team-card-title { font-size: 17px; font-weight: 700; color: #F8FAFC; }
+  .team-card-steps { font-size: 13px; color: #22C55E; }
+  .team-card-arrow { font-size: 20px; color: #475569; }
+
+  /* ===== TEAM SCREEN ===== */
+  .team-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .team-title { font-size: 22px; font-weight: 700; color: #F8FAFC; }
+  .team-rank {
+    background: #334155; border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; color: #94A3B8; font-weight: 600;
+  }
+  .team-rank span { color: #22C55E; }
+
+  .team-progress-section { margin-bottom: 24px; }
+  .team-progress-label {
+    display: flex; justify-content: space-between; margin-bottom: 8px;
+    font-size: 13px; color: #94A3B8;
+  }
+  .team-progress-label span { color: #F8FAFC; font-weight: 700; font-size: 16px; }
+  .team-progress-bar {
+    height: 14px; background: #1E293B; border-radius: 7px; overflow: hidden;
+  }
+  .team-progress-fill {
+    height: 100%; background: linear-gradient(90deg, #16A34A, #22C55E);
+    border-radius: 7px; transition: width 1s ease;
+  }
+  .team-progress-pct {
+    text-align: right; font-size: 12px; color: #64748B; margin-top: 4px;
+  }
+
+  .team-stats-row {
+    display: flex; gap: 10px; margin-bottom: 20px;
+  }
+  .team-stat {
+    flex: 1; background: #1E293B; border-radius: 10px; padding: 12px; text-align: center;
+  }
+  .team-stat-val { font-size: 20px; font-weight: 700; color: #22C55E; }
+  .team-stat-lbl { font-size: 10px; color: #94A3B8; margin-top: 3px; }
+
+  .members-title { font-size: 14px; color: #94A3B8; font-weight: 600; margin-bottom: 12px; }
+
+  .member-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #1E293B; border-radius: 12px; padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .member-row.is-me { border: 1px solid #22C55E33; background: #22C55E0D; }
+  .member-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #F8FAFC; flex-shrink: 0;
+  }
+  .member-info { flex: 1; }
+  .member-name { font-size: 14px; font-weight: 600; color: #F8FAFC; }
+  .member-you { font-size: 10px; color: #22C55E; font-weight: 600; }
+  .member-steps { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+  .member-status { font-size: 18px; flex-shrink: 0; }
+  .member-step-count { text-align: right; }
+  .member-step-num { font-size: 16px; font-weight: 700; color: #F8FAFC; }
+  .member-step-label { font-size: 9px; color: #64748B; }
+
+  /* ===== LEADERBOARD SCREEN ===== */
+  .lb-title { font-size: 22px; font-weight: 700; color: #F8FAFC; margin-bottom: 16px; }
+
+  .lb-tabs {
+    display: flex; background: #1E293B; border-radius: 10px; padding: 3px; margin-bottom: 16px;
+  }
+  .lb-tab {
+    flex: 1; text-align: center; padding: 10px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; color: #94A3B8; cursor: pointer; transition: all 0.2s;
+  }
+  .lb-tab.active { background: #22C55E; color: #0F172A; }
+
+  .time-filters {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .time-filter {
+    padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    color: #94A3B8; background: #1E293B; cursor: pointer; border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .time-filter.active { color: #22C55E; border-color: #22C55E; background: #22C55E15; }
+
+  .podium {
+    display: flex; align-items: flex-end; justify-content: center; gap: 8px;
+    margin-bottom: 24px; height: 190px;
+  }
+  .podium-item {
+    display: flex; flex-direction: column; align-items: center; border-radius: 14px 14px 0 0;
+    padding: 14px 8px 16px; position: relative;
+  }
+  .podium-item.gold { background: linear-gradient(180deg, #422006, #1E293B); width: 110px; height: 180px; order: 2; }
+  .podium-item.silver { background: linear-gradient(180deg, #1e293b, #1E293B); width: 100px; height: 150px; order: 1; }
+  .podium-item.bronze { background: linear-gradient(180deg, #292524, #1E293B); width: 100px; height: 130px; order: 3; }
+  .podium-medal { font-size: 28px; margin-bottom: 8px; }
+  .podium-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px;
+  }
+  .podium-item.gold .podium-avatar { border: 2px solid #FFD700; }
+  .podium-item.silver .podium-avatar { border: 2px solid #C0C0C0; }
+  .podium-item.bronze .podium-avatar { border: 2px solid #CD7F32; }
+  .podium-name { font-size: 12px; font-weight: 600; color: #F8FAFC; text-align: center; line-height: 1.2; }
+  .podium-dept { font-size: 9px; color: #64748B; margin-top: 2px; }
+  .podium-steps { font-size: 14px; font-weight: 800; color: #F8FAFC; margin-top: 6px; }
+  .podium-pts { font-size: 9px; color: #94A3B8; }
+
+  .lb-list { display: flex; flex-direction: column; gap: 6px; }
+  .lb-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #1E293B; border-radius: 10px; padding: 10px 12px;
+  }
+  .lb-row.is-me { border: 1px solid #22C55E33; background: #22C55E0D; }
+  .lb-rank {
+    width: 26px; font-size: 14px; font-weight: 700; color: #64748B; text-align: center; flex-shrink: 0;
+  }
+  .lb-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #F8FAFC; flex-shrink: 0;
+  }
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 13px; font-weight: 600; color: #F8FAFC; }
+  .lb-dept { font-size: 10px; color: #64748B; }
+  .lb-right { text-align: right; }
+  .lb-steps { font-size: 15px; font-weight: 700; color: #F8FAFC; }
+  .lb-pts { font-size: 10px; color: #22C55E; }
+
+  /* Team leaderboard */
+  .tlb-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #1E293B; border-radius: 12px; padding: 14px;
+    margin-bottom: 8px;
+  }
+  .tlb-row.is-my-team { border: 1px solid #22C55E33; background: #22C55E0D; }
+  .tlb-rank { font-size: 18px; font-weight: 800; color: #64748B; width: 30px; text-align: center; }
+  .tlb-rank.r1 { color: #FFD700; }
+  .tlb-rank.r2 { color: #C0C0C0; }
+  .tlb-rank.r3 { color: #CD7F32; }
+  .tlb-info { flex: 1; }
+  .tlb-name { font-size: 15px; font-weight: 700; color: #F8FAFC; }
+  .tlb-name .my-badge { font-size: 10px; color: #22C55E; font-weight: 600; margin-left: 6px; }
+  .tlb-members { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+  .tlb-right { text-align: right; }
+  .tlb-steps { font-size: 17px; font-weight: 700; color: #F8FAFC; }
+  .tlb-hit { font-size: 10px; color: #22C55E; margin-top: 2px; }
+
+  /* pinned row */
+  .pinned-row {
+    position: sticky; bottom: 0; background: #0F172A;
+    padding-top: 8px; margin-top: 8px;
+    border-top: 1px solid #334155;
+  }
+
+  /* Utility */
+  .section-gap { height: 16px; }
+
+  /* ===== LUNCH MULTIPLIER (My Steps) ===== */
+  .lunch-card {
+    background: linear-gradient(135deg, #14532d, #1e293b);
+    border: 1px solid #22C55E; border-radius: 14px;
+    padding: 14px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative; overflow: hidden;
+  }
+  .lunch-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at top right, #22C55E30, transparent 60%);
+    pointer-events: none;
+  }
+  .lunch-pulse {
+    width: 10px; height: 10px; border-radius: 50%; background: #22C55E;
+    box-shadow: 0 0 0 0 #22C55E; animation: pulse 1.5s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 #22C55E80; }
+    70% { box-shadow: 0 0 0 10px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+  .lunch-text { flex: 1; z-index: 1; }
+  .lunch-title-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 3px;
+  }
+  .lunch-live-badge {
+    background: #22C55E; color: #0F172A; font-size: 9px; font-weight: 800;
+    padding: 2px 7px; border-radius: 10px; letter-spacing: 0.5px;
+  }
+  .lunch-title { color: #F8FAFC; font-size: 14px; font-weight: 700; }
+  .lunch-sub { color: #86EFAC; font-size: 11px; }
+  .lunch-mult {
+    background: #22C55E; color: #0F172A; font-size: 18px; font-weight: 800;
+    padding: 8px 12px; border-radius: 10px; flex-shrink: 0; z-index: 1;
+  }
+
+  /* ===== TEAM BONUS TRACKER ===== */
+  .team-bonus {
+    background: linear-gradient(135deg, #1e1b4b, #1E293B);
+    border: 1px solid #6366F1; border-radius: 14px;
+    padding: 14px; margin-bottom: 20px;
+  }
+  .team-bonus-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+  }
+  .team-bonus-title {
+    display: flex; align-items: center; gap: 6px;
+    color: #F8FAFC; font-size: 13px; font-weight: 700;
+  }
+  .team-bonus-points {
+    color: #A5B4FC; font-size: 11px; font-weight: 600;
+  }
+  .team-bonus-avatars {
+    display: flex; gap: 8px; margin-bottom: 8px;
+  }
+  .bonus-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #F8FAFC;
+    position: relative; border: 2px solid #334155;
+  }
+  .bonus-avatar.hit { border-color: #22C55E; }
+  .bonus-avatar.hit::after {
+    content: '✓'; position: absolute; bottom: -2px; right: -2px;
+    background: #22C55E; color: #0F172A; font-size: 9px; font-weight: 800;
+    width: 14px; height: 14px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #1E293B;
+  }
+  .team-bonus-progress {
+    display: flex; align-items: center; gap: 8px; font-size: 11px;
+  }
+  .team-bonus-count { color: #F8FAFC; font-weight: 700; }
+  .team-bonus-status { color: #A5B4FC; }
+
+  /* ===== NUDGE BUTTON ===== */
+  .btn-nudge {
+    background: #3B82F615; color: #60A5FA; border: 1px solid #3B82F6;
+    font-size: 10px; font-weight: 600; padding: 5px 10px;
+    border-radius: 20px; cursor: pointer; flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .btn-nudge:hover { background: #3B82F6; color: #F8FAFC; }
+  .btn-nudge.sent {
+    background: #22C55E15; color: #22C55E; border-color: #22C55E;
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="screen-nav">
+    <button class="active" onclick="showScreen('steps')">My Steps</button>
+    <button onclick="showScreen('team')">Team</button>
+    <button onclick="showScreen('leaderboard-people')">Leaderboard — People</button>
+    <button onclick="showScreen('leaderboard-teams')">Leaderboard — Teams</button>
+    <a href="hr-dashboard.html" style="background:#0F172A;border:1px solid #7C3AED;color:#A78BFA;padding:8px 16px;border-radius:8px;font-size:13px;text-decoration:none;">HR Dashboard →</a>
+  </div>
+
+  <div class="phone">
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <span class="status-icons">
+        <span>&#9679;&#9679;&#9679;&#9679;</span>
+        <span>WiFi</span>
+        <span>100%</span>
+      </span>
+    </div>
+
+    <!-- ========== MY STEPS ========== -->
+    <div class="screen active" id="screen-steps">
+      <div class="screen-content">
+        <div class="greeting">Good morning</div>
+        <div class="user-name">Priya Sharma</div>
+
+        <div class="progress-ring-container">
+          <div class="progress-ring-wrap">
+            <svg width="220" height="220" viewBox="0 0 220 220">
+              <circle class="ring-bg" cx="110" cy="110" r="96" />
+              <circle class="ring-fill" cx="110" cy="110" r="96"
+                stroke-dasharray="603.19"
+                stroke-dashoffset="120.64" />
+            </svg>
+            <div class="ring-center">
+              <div class="ring-steps">6,240</div>
+              <div class="ring-label">steps today</div>
+              <div class="ring-target">of 8,000 goal</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="streak-badge">
+          <span class="streak-fire">🔥</span>
+          <div>
+            <div class="streak-text">5-Day Streak!</div>
+            <div class="streak-sub">Keep it going tomorrow</div>
+          </div>
+        </div>
+
+        <!-- Lunch Walk Multiplier — LIVE state -->
+        <div class="lunch-card">
+          <div class="lunch-pulse"></div>
+          <div class="lunch-text">
+            <div class="lunch-title-row">
+              <span class="lunch-live-badge">LIVE</span>
+              <span class="lunch-title">Lunch Walk Bonus</span>
+            </div>
+            <div class="lunch-sub">Walk now — ends in 32 min</div>
+          </div>
+          <div class="lunch-mult">1.5×</div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value">287</div>
+            <div class="stat-label">Calories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-value">4.2</div>
+            <div class="stat-label">Km walked</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⏱</div>
+            <div class="stat-value">48</div>
+            <div class="stat-label">Active min</div>
+          </div>
+        </div>
+
+        <div class="team-card" onclick="showScreen('team')">
+          <div class="team-card-left">
+            <div class="team-card-name">Your Team</div>
+            <div class="team-card-title">Team Alpha</div>
+            <div class="team-card-steps">34,200 steps today</div>
+          </div>
+          <div class="team-card-arrow">&#8250;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TEAM ========== -->
+    <div class="screen" id="screen-team">
+      <div class="screen-content">
+        <div class="team-header">
+          <div class="team-title">Team Alpha</div>
+          <div class="team-rank">#<span>2</span> of 8</div>
+        </div>
+
+        <div class="team-progress-section">
+          <div class="team-progress-label">
+            <span>34,200</span>
+            <span style="color:#64748B;font-size:13px;font-weight:400">/ 50,000 steps</span>
+          </div>
+          <div class="team-progress-bar">
+            <div class="team-progress-fill" style="width: 68.4%"></div>
+          </div>
+          <div class="team-progress-pct">68% of daily team goal</div>
+        </div>
+
+        <div class="team-stats-row">
+          <div class="team-stat">
+            <div class="team-stat-val">3/6</div>
+            <div class="team-stat-lbl">Hit target</div>
+          </div>
+          <div class="team-stat">
+            <div class="team-stat-val">5,700</div>
+            <div class="team-stat-lbl">Avg steps</div>
+          </div>
+          <div class="team-stat">
+            <div class="team-stat-val">🔥 3</div>
+            <div class="team-stat-lbl">Team streak</div>
+          </div>
+        </div>
+
+        <!-- Team Bonus Tracker -->
+        <div class="team-bonus">
+          <div class="team-bonus-header">
+            <div class="team-bonus-title">🎯 Team Bonus</div>
+            <div class="team-bonus-points">+200 pts each if all hit</div>
+          </div>
+          <div class="team-bonus-avatars">
+            <div class="bonus-avatar hit" style="background:#7C3AED">RV</div>
+            <div class="bonus-avatar hit" style="background:#EC4899">AD</div>
+            <div class="bonus-avatar hit" style="background:#F59E0B">VS</div>
+            <div class="bonus-avatar" style="background:#22C55E">PS</div>
+            <div class="bonus-avatar" style="background:#3B82F6">DJ</div>
+            <div class="bonus-avatar" style="background:#EF4444">MP</div>
+          </div>
+          <div class="team-bonus-progress">
+            <span class="team-bonus-count">3 / 6</span>
+            <span class="team-bonus-status">hit target · 3 more to unlock team bonus</span>
+          </div>
+        </div>
+
+        <div class="members-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Members</span>
+          <span class="btn-nudge" onclick="nudgeAll(this)">👋 Nudge Team</span>
+        </div>
+
+        <div class="member-row">
+          <div class="member-avatar" style="background:#7C3AED">RV</div>
+          <div class="member-info">
+            <div class="member-name">Rahul Verma</div>
+            <div class="member-steps">9,120 steps</div>
+          </div>
+          <div class="member-step-count">
+            <div class="member-step-num" style="color:#22C55E">✓ 114%</div>
+          </div>
+        </div>
+
+        <div class="member-row">
+          <div class="member-avatar" style="background:#EC4899">AD</div>
+          <div class="member-info">
+            <div class="member-name">Anita Desai</div>
+            <div class="member-steps">8,450 steps</div>
+          </div>
+          <div class="member-step-count">
+            <div class="member-step-num" style="color:#22C55E">✓ 106%</div>
+          </div>
+        </div>
+
+        <div class="member-row">
+          <div class="member-avatar" style="background:#F59E0B">VS</div>
+          <div class="member-info">
+            <div class="member-name">Vikram Singh</div>
+            <div class="member-steps">8,200 steps</div>
+          </div>
+          <div class="member-step-count">
+            <div class="member-step-num" style="color:#22C55E">✓ 103%</div>
+          </div>
+        </div>
+
+        <div class="member-row is-me">
+          <div class="member-avatar" style="background:#22C55E">PS</div>
+          <div class="member-info">
+            <div class="member-name">Priya Sharma <span class="member-you">YOU</span></div>
+            <div class="member-steps">6,240 steps</div>
+          </div>
+          <div class="member-step-count">
+            <div class="member-step-num">78%</div>
+          </div>
+        </div>
+
+        <div class="member-row">
+          <div class="member-avatar" style="background:#3B82F6">DJ</div>
+          <div class="member-info">
+            <div class="member-name">Deepak Joshi</div>
+            <div class="member-steps">5,890 steps · 74%</div>
+          </div>
+          <span class="btn-nudge" onclick="nudgeOne(this)">👋 Nudge</span>
+        </div>
+
+        <div class="member-row">
+          <div class="member-avatar" style="background:#EF4444">MP</div>
+          <div class="member-info">
+            <div class="member-name">Meera Patel</div>
+            <div class="member-steps">4,300 steps · 54%</div>
+          </div>
+          <span class="btn-nudge" onclick="nudgeOne(this)">👋 Nudge</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========== LEADERBOARD — PEOPLE ========== -->
+    <div class="screen" id="screen-leaderboard-people">
+      <div class="screen-content">
+        <div class="lb-title">Leaderboard</div>
+
+        <div class="lb-tabs">
+          <div class="lb-tab active" onclick="showScreen('leaderboard-people')">People</div>
+          <div class="lb-tab" onclick="showScreen('leaderboard-teams')">Teams</div>
+        </div>
+
+        <div class="time-filters">
+          <div class="time-filter active">Today</div>
+          <div class="time-filter">This Week</div>
+          <div class="time-filter">All Time</div>
+        </div>
+
+        <!-- Podium -->
+        <div class="podium">
+          <!-- Silver #2 -->
+          <div class="podium-item silver">
+            <div class="podium-medal">🥈</div>
+            <div class="podium-avatar" style="background:#EC4899">SR</div>
+            <div class="podium-name">Sneha Reddy</div>
+            <div class="podium-dept">Ops</div>
+            <div class="podium-steps">12,800</div>
+            <div class="podium-pts">13,300 pts</div>
+          </div>
+          <!-- Gold #1 -->
+          <div class="podium-item gold">
+            <div class="podium-medal">🥇</div>
+            <div class="podium-avatar" style="background:#F59E0B">AK</div>
+            <div class="podium-name">Arjun Khanna</div>
+            <div class="podium-dept">Sales</div>
+            <div class="podium-steps">14,200</div>
+            <div class="podium-pts">14,700 pts</div>
+          </div>
+          <!-- Bronze #3 -->
+          <div class="podium-item bronze">
+            <div class="podium-medal">🥉</div>
+            <div class="podium-avatar" style="background:#3B82F6">AT</div>
+            <div class="podium-name">Amit Tiwari</div>
+            <div class="podium-dept">Warehouse</div>
+            <div class="podium-steps">11,950</div>
+            <div class="podium-pts">12,450 pts</div>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div class="lb-list">
+          <div class="lb-row">
+            <div class="lb-rank">4</div>
+            <div class="lb-avatar" style="background:#8B5CF6">KN</div>
+            <div class="lb-info"><div class="lb-name">Kavita Nair</div><div class="lb-dept">Marketing</div></div>
+            <div class="lb-right"><div class="lb-steps">11,200</div><div class="lb-pts">11,700 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">5</div>
+            <div class="lb-avatar" style="background:#14B8A6">RK</div>
+            <div class="lb-info"><div class="lb-name">Ravi Kumar</div><div class="lb-dept">Finance</div></div>
+            <div class="lb-right"><div class="lb-steps">10,800</div><div class="lb-pts">11,300 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">6</div>
+            <div class="lb-avatar" style="background:#F472B6">PG</div>
+            <div class="lb-info"><div class="lb-name">Pooja Gupta</div><div class="lb-dept">HR</div></div>
+            <div class="lb-right"><div class="lb-steps">10,100</div><div class="lb-pts">10,600 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">7</div>
+            <div class="lb-avatar" style="background:#7C3AED">RV</div>
+            <div class="lb-info"><div class="lb-name">Rahul Verma</div><div class="lb-dept">Ops</div></div>
+            <div class="lb-right"><div class="lb-steps">9,120</div><div class="lb-pts">9,620 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">8</div>
+            <div class="lb-avatar" style="background:#EF4444">SRo</div>
+            <div class="lb-info"><div class="lb-name">Sunita Rao</div><div class="lb-dept">Sales</div></div>
+            <div class="lb-right"><div class="lb-steps">8,900</div><div class="lb-pts">9,400 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">9</div>
+            <div class="lb-avatar" style="background:#EC4899">AD</div>
+            <div class="lb-info"><div class="lb-name">Anita Desai</div><div class="lb-dept">Ops</div></div>
+            <div class="lb-right"><div class="lb-steps">8,450</div><div class="lb-pts">8,950 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">10</div>
+            <div class="lb-avatar" style="background:#6366F1">MPi</div>
+            <div class="lb-info"><div class="lb-name">Manoj Pillai</div><div class="lb-dept">Warehouse</div></div>
+            <div class="lb-right"><div class="lb-steps">8,300</div><div class="lb-pts">8,800 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">11</div>
+            <div class="lb-avatar" style="background:#F59E0B">VS</div>
+            <div class="lb-info"><div class="lb-name">Vikram Singh</div><div class="lb-dept">Ops</div></div>
+            <div class="lb-right"><div class="lb-steps">8,200</div><div class="lb-pts">8,700 pts</div></div>
+          </div>
+          <div class="lb-row">
+            <div class="lb-rank">12</div>
+            <div class="lb-avatar" style="background:#A78BFA">NB</div>
+            <div class="lb-info"><div class="lb-name">Neha Bhatt</div><div class="lb-dept">Marketing</div></div>
+            <div class="lb-right"><div class="lb-steps">7,600</div><div class="lb-pts">7,600 pts</div></div>
+          </div>
+
+          <!-- Pinned "You" row -->
+          <div class="pinned-row">
+            <div class="lb-row is-me">
+              <div class="lb-rank" style="color:#22C55E">13</div>
+              <div class="lb-avatar" style="background:#22C55E">PS</div>
+              <div class="lb-info"><div class="lb-name">Priya Sharma <span style="font-size:10px;color:#22C55E;font-weight:600">YOU</span></div><div class="lb-dept">Ops</div></div>
+              <div class="lb-right"><div class="lb-steps">6,240</div><div class="lb-pts">6,240 pts</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== LEADERBOARD — TEAMS ========== -->
+    <div class="screen" id="screen-leaderboard-teams">
+      <div class="screen-content">
+        <div class="lb-title">Leaderboard</div>
+
+        <div class="lb-tabs">
+          <div class="lb-tab" onclick="showScreen('leaderboard-people')">People</div>
+          <div class="lb-tab active" onclick="showScreen('leaderboard-teams')">Teams</div>
+        </div>
+
+        <div class="time-filters">
+          <div class="time-filter active">Today</div>
+          <div class="time-filter">This Week</div>
+          <div class="time-filter">All Time</div>
+        </div>
+
+        <div class="section-gap"></div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank r1">1</div>
+          <div class="tlb-info">
+            <div class="tlb-name">🔥 Team Blaze</div>
+            <div class="tlb-members">6 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">48,200</div>
+            <div class="tlb-hit">6/6 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row is-my-team">
+          <div class="tlb-rank r2">2</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Alpha <span class="my-badge">YOUR TEAM</span></div>
+            <div class="tlb-members">6 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">42,200</div>
+            <div class="tlb-hit">3/6 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank r3">3</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Rocket</div>
+            <div class="tlb-members">7 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">39,800</div>
+            <div class="tlb-hit">4/7 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank">4</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Stride</div>
+            <div class="tlb-members">6 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">37,100</div>
+            <div class="tlb-hit">3/6 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank">5</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Pulse</div>
+            <div class="tlb-members">5 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">35,600</div>
+            <div class="tlb-hit">2/5 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank">6</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Summit</div>
+            <div class="tlb-members">7 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">33,400</div>
+            <div class="tlb-hit">3/7 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank">7</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Flash</div>
+            <div class="tlb-members">6 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">29,800</div>
+            <div class="tlb-hit">2/6 hit target</div>
+          </div>
+        </div>
+
+        <div class="tlb-row">
+          <div class="tlb-rank">8</div>
+          <div class="tlb-info">
+            <div class="tlb-name">Team Zen</div>
+            <div class="tlb-members">5 members</div>
+          </div>
+          <div class="tlb-right">
+            <div class="tlb-steps">24,500</div>
+            <div class="tlb-hit">1/5 hit target</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab active" id="tab-steps" onclick="showScreen('steps')">
+        <div class="tab-icon">👟</div>
+        <div class="tab-label">Steps</div>
+      </div>
+      <div class="tab" id="tab-team" onclick="showScreen('team')">
+        <div class="tab-icon">👥</div>
+        <div class="tab-label">Team</div>
+      </div>
+      <div class="tab" id="tab-leaderboard" onclick="showScreen('leaderboard-people')">
+        <div class="tab-icon">🏆</div>
+        <div class="tab-label">Leaderboard</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function nudgeOne(el) {
+  el.classList.add('sent');
+  el.innerHTML = '✓ Sent';
+  setTimeout(function(){ el.classList.remove('sent'); el.innerHTML = '👋 Nudge'; }, 2500);
+}
+function nudgeAll(el) {
+  el.classList.add('sent');
+  el.innerHTML = '✓ Team nudged';
+  setTimeout(function(){ el.classList.remove('sent'); el.innerHTML = '👋 Nudge Team'; }, 2500);
+}
+
+function showScreen(name) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // Show target
+  document.getElementById('screen-' + name).classList.add('active');
+
+  // Update tab bar
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (name === 'steps') document.getElementById('tab-steps').classList.add('active');
+  else if (name === 'team') document.getElementById('tab-team').classList.add('active');
+  else {
+    document.getElementById('tab-leaderboard').classList.add('active');
+  }
+
+  // Update screen nav buttons
+  document.querySelectorAll('.screen-nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.screen-nav button').forEach(b => {
+    if (
+      (name === 'steps' && b.textContent === 'My Steps') ||
+      (name === 'team' && b.textContent === 'Team') ||
+      (name === 'leaderboard-people' && b.textContent.includes('People')) ||
+      (name === 'leaderboard-teams' && b.textContent.includes('Teams'))
+    ) {
+      b.classList.add('active');
+    }
+  });
+}
+</script>
+</body>
+</html>
